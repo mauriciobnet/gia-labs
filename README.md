@@ -24,7 +24,7 @@ nenhum: as evidências que você entrega no Moodle são arquivos gerados aqui de
 ## Começando
 
 ```bash
-git clone <URL-DESTE-REPOSITORIO> gia-labs
+git clone https://github.com/mauriciobnet/gia-labs.git
 cd gia-labs
 
 docker compose up -d --build --wait     # primeira vez: baixa as imagens, leva alguns minutos

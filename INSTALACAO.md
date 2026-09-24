@@ -207,7 +207,7 @@ mantida. Se algum tutorial da internet mandar usar o hífen, é tutorial velho.
 ## Baixando o curso e subindo a stack
 
 ```bash
-git clone <URL-DESTE-REPOSITORIO> gia-labs
+git clone https://github.com/mauriciobnet/gia-labs.git
 cd gia-labs
 
 docker compose up -d --build --wait
