@@ -224,8 +224,11 @@ def _aluno():
     try:
         with open(os.path.join(CARIMBOS, "aluno.json"), encoding="utf-8") as f:
             d = json.load(f)
-        if d.get("nome"):
-            return {"nome": d.get("nome", ""), "ra": d.get("ra", ""),
+        # Sem e-mail conta como não identificado: é por ele que o professor acha a
+        # pessoa no Moodle. Um aluno.json antigo, só com nome, cai aqui e o painel volta
+        # a pedir a identificação, o que é o certo.
+        if d.get("nome") and d.get("email"):
+            return {"nome": d.get("nome", ""), "email": d.get("email", ""),
                     "instalacao": d.get("instalacao", "")}
     except Exception:
         pass

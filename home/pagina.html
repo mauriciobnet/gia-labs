@@ -375,14 +375,14 @@ function montarAluno(aluno, labs){
   if (!aluno) {
     $("#aluno").innerHTML = `<div class="aluno faltando">
       <b>Identifique-se antes de começar.</b>
-      <span class="cinza">Sem isto o arquivo de entrega sai sem nome e não serve para o Moodle.</span>
-      <code>docker compose exec toolbox python3 /work/scripts/evidencia.py aluno --nome "Seu Nome" --ra 000000</code>
+      <span class="cinza">Sem nome e e-mail o arquivo de entrega não serve para o Moodle. Use o e-mail do seu cadastro no Moodle.</span>
+      <code>docker compose exec toolbox python3 /work/scripts/evidencia.py aluno --nome "Seu Nome" --email "seu.email@example.com"</code>
     </div>`;
     return;
   }
   $("#aluno").innerHTML = `<div class="aluno">
     <b>${esc(aluno.nome)}</b>
-    ${aluno.ra ? `<span class="cinza">RA ${esc(aluno.ra)}</span>` : ""}
+    <span class="cinza">${esc(aluno.email)}</span>
     <span class="cinza">instalação <code>${esc(aluno.instalacao)}</code></span>
     <span class="cinza">${entregues} evidência(s) gerada(s)</span>
   </div>`;

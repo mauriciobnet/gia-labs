@@ -34,10 +34,12 @@ docker compose run --rm check           # verificação do ambiente (é o Lab 1)
 Depois abra o **painel** em <http://localhost:18080>. Ele mostra o estado de cada serviço, em que
 etapa você está, o comando de cada laboratório e o botão que baixa a evidência para entregar.
 
-Antes de começar os laboratórios, registre seu nome uma vez. Ele vai dentro de cada evidência:
+Antes de começar os laboratórios, registre seu nome e seu e-mail uma vez. Eles vão dentro de cada
+evidência, e o e-mail tem que ser **o mesmo do seu cadastro no Moodle**, porque é por ele que a
+entrega é conferida:
 
 ```bash
-docker compose exec -T toolbox python3 /work/scripts/evidencia.py aluno --nome "Seu Nome" --ra "seu RA"
+docker compose exec -T toolbox python3 /work/scripts/evidencia.py aluno --nome "Seu Nome" --email "seu.email@example.com"
 ```
 
 ## Os laboratórios deste pacote
@@ -85,7 +87,7 @@ Moodle.
 ## Entregando no Moodle
 
 Todo laboratório termina gravando um arquivo `evidencia-labN.json` com o que foi verificado **na sua
-máquina**: seu nome, seu RA, o identificador da sua instalação, os horários e o que cada teste
+máquina**: seu nome, seu e-mail, o identificador da sua instalação, os horários e o que cada teste
 observou. Baixe pelo botão "evidência" da etapa no painel e suba na tarefa correspondente.
 
 Dois arquivos iguais se denunciam sozinhos, então não adianta pedir o do colega. E se um laboratório
