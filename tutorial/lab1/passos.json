@@ -2,8 +2,8 @@
   "lab": "lab1",
   "titulo": "Lab 1: Preparação do ambiente",
   "subtitulo": "Docker Compose, Traefik, toolbox e o script de verificação",
-  "gerado": "2026-09-24T11:47:23.520Z",
-  "duracao_s": 10,
+  "gerado": "2026-09-24T16:12:06.603Z",
+  "duracao_s": 7,
   "passos": [
     {
       "n": 1,
@@ -29,7 +29,7 @@
       "png": "img/02.png",
       "url": null,
       "cmd": "docker compose ps --format \"table {{.Service}}\t{{.Status}}\"",
-      "saida": "SERVICE        STATUS\napi            Up About a minute\napp            Up About a minute\nglpi           Up About a minute\nglpidb         Up About a minute (healthy)\ngrafana        Up 47 seconds\nhome           Up About a minute\nidp            Up About a minute\nkeycloak       Up 24 seconds (healthy)\nlam            Up About a minute (healthy)\noauth2-proxy   Up About a minute\nopenbao        Up 11 seconds\nopenldap       Up About a minute (healthy)\npostgres       Up About a minute (healthy)\ntoolbox        Up About a minute\ntraefik        Up About a minute\nwhoami         Up About a minute",
+      "saida": "SERVICE        STATUS\napi            Up About a minute\napp            Up About a minute\nglpi           Up About a minute\nglpidb         Up About a minute (healthy)\ngrafana        Up 36 seconds\nhome           Up About a minute\nidp            Up About a minute\nkeycloak       Up 17 seconds (healthy)\nlam            Up About a minute (healthy)\noauth2-proxy   Up 59 seconds\nopenbao        Up 8 seconds\nopenldap       Up About a minute (healthy)\npostgres       Up About a minute (healthy)\ntoolbox        Up About a minute\ntraefik        Up About a minute\nwhoami         Up About a minute",
       "obs": "",
       "onde": "host"
     },
@@ -57,7 +57,7 @@
       "png": "img/04.png",
       "url": null,
       "cmd": "docker compose --profile tools run --rm check",
-      "saida": "=== GIA · Lab 1: verificação do ambiente ===\n\n[ OK ] Arquitetura: x86_64\n[ OK ] Memória disponível para containers: 31.1 GB\n[ OK ] Traefik respondendo\n[ OK ] Roteamento por hostname (whoami.localhost:18080) OK\n[ OK ] OpenLDAP respondendo e seed carregado (uid=ana.souza)\n[ OK ] LAM (lam.localhost:18080) OK\n[ OK ] Keycloak OK, issuer: http://keycloak.localhost:18080/realms/master\n[ OK ] Acesso ao registry quay.io\n\nResumo: 8 OK, 0 falhas, 0 avisos\nPainel do laboratório: http://localhost:18080\nTeste final no NAVEGADOR: abra http://whoami.localhost:18080 e http://keycloak.localhost:18080\n\nevidência do Lab 1: 9 de 9 verificações passaram\n  arquivo: /work/out/evidencia-lab1.json\n  aluno:   Seu Nome Completo · seu.email@example.com\n  entregue este arquivo no Moodle. Ele também aparece para baixar no painel.\nLAB1 OK · código: 95eeaf",
+      "saida": "=== GIA · Lab 1: verificação do ambiente ===\n\n[ OK ] Arquitetura: x86_64\n[ OK ] Memória disponível para containers: 31.1 GB\n[ OK ] Traefik respondendo\n[ OK ] Roteamento por hostname (whoami.localhost:18080) OK\n[ OK ] OpenLDAP respondendo e seed carregado (uid=ana.souza)\n[ OK ] LAM (lam.localhost:18080) OK\n[ OK ] Keycloak OK, issuer: http://keycloak.localhost:18080/realms/master\n[ OK ] Acesso ao registry quay.io\n\nResumo: 8 OK, 0 falhas, 0 avisos\nPainel do laboratório: http://localhost:18080\nTeste final no NAVEGADOR: abra http://whoami.localhost:18080 e http://keycloak.localhost:18080\n\nevidência do Lab 1: 9 de 9 verificações passaram\n  arquivo: /work/out/evidencia-lab1.json\n  aluno:   Seu Nome Completo · seu.email@example.com\n  entregue este arquivo no Moodle. Ele também aparece para baixar no painel.\nLAB1 OK · código: 6edd2e",
       "obs": "",
       "onde": "host"
     },
@@ -97,7 +97,7 @@
       "png": "img/07.png",
       "url": null,
       "cmd": "python3 /work/scripts/evidencia.py mostrar --lab 1",
-      "saida": "{\n  \"formato\": \"gia-evidencia/2\",\n  \"lab\": \"1\",\n  \"titulo\": \"Lab 1: ambiente verificado\",\n  \"aluno\": {\n    \"nome\": \"Seu Nome Completo\",\n    \"email\": \"seu.email@example.com\",\n    \"instalacao\": \"111aa69b411a\"\n  },\n  \"maquina\": {\n    \"host\": \"6b9f62d8ebe5\",\n    \"porta\": 18080\n  },\n  \"quando\": \"2026-09-24T11:47:18+0000\",\n  \"ok\": true,\n  \"resumo\": \"9 de 9 verificações passaram\",\n  \"verificacoes\": [\n    {\n      \"estado\": \"ok\",\n      \"o_que\": \"Arquitetura: x86_64\",\n      \"observado\": \"\"\n    },\n    {\n      \"estado\": \"ok\",\n      \"o_que\": \"Memória disponível para containers: 31.1 GB\",\n      \"observado\": \"\"\n    },\n    {\n      \"estado\": \"ok\",\n      \"o_que\": \"Traefik respondendo\",\n      \"observado\": \"\"\n    },\n    {\n      \"estado\": \"ok\",\n      \"o_que\": \"Roteamento por hostname (whoami.localhost:18080) OK\",\n      \"observado\": \"\"\n    },\n    {\n      \"estado\": \"ok\",\n      \"o_que\": \"OpenLDAP respondendo e seed carregado (uid=ana.souza)\",\n      \"observado\": \"\"\n    },\n    {\n      \"estado\": \"ok\",\n      \"o_que\": \"LAM (lam.localhost:18080) OK\",\n      \"observado\": \"\"\n    },\n    {\n      \"estado\": \"ok\",\n      \"o_que\": \"Keycloak OK, issuer: http://keycloak.localhost:18080/realms/master\",\n      \"observado\": \"\"\n    },\n    {\n      \"estado\": \"ok\",\n      \"o_que\": \"Acesso ao registry quay.io\",\n      \"observado\": \"\"\n    },\n    {\n      \"estado\": \"ok\",\n      \"o_que\": \"código do ambiente\",\n      \"observado\": \"95eeaf\"\n    }\n  ],\n  \"conferencia\": \"sha256:6a24db4775c20fd11f691fff4966873fd26b63fd68f61dd9fa6896eb22f9ca00\"\n}",
+      "saida": "{\n  \"formato\": \"gia-evidencia/2\",\n  \"lab\": \"1\",\n  \"titulo\": \"Lab 1: ambiente verificado\",\n  \"aluno\": {\n    \"nome\": \"Seu Nome Completo\",\n    \"email\": \"seu.email@example.com\",\n    \"instalacao\": \"111aa69b411a\"\n  },\n  \"maquina\": {\n    \"host\": \"46e4de503672\",\n    \"porta\": 18080\n  },\n  \"quando\": \"2026-09-24T16:12:01+0000\",\n  \"ok\": true,\n  \"resumo\": \"9 de 9 verificações passaram\",\n  \"verificacoes\": [\n    {\n      \"estado\": \"ok\",\n      \"o_que\": \"Arquitetura: x86_64\",\n      \"observado\": \"\"\n    },\n    {\n      \"estado\": \"ok\",\n      \"o_que\": \"Memória disponível para containers: 31.1 GB\",\n      \"observado\": \"\"\n    },\n    {\n      \"estado\": \"ok\",\n      \"o_que\": \"Traefik respondendo\",\n      \"observado\": \"\"\n    },\n    {\n      \"estado\": \"ok\",\n      \"o_que\": \"Roteamento por hostname (whoami.localhost:18080) OK\",\n      \"observado\": \"\"\n    },\n    {\n      \"estado\": \"ok\",\n      \"o_que\": \"OpenLDAP respondendo e seed carregado (uid=ana.souza)\",\n      \"observado\": \"\"\n    },\n    {\n      \"estado\": \"ok\",\n      \"o_que\": \"LAM (lam.localhost:18080) OK\",\n      \"observado\": \"\"\n    },\n    {\n      \"estado\": \"ok\",\n      \"o_que\": \"Keycloak OK, issuer: http://keycloak.localhost:18080/realms/master\",\n      \"observado\": \"\"\n    },\n    {\n      \"estado\": \"ok\",\n      \"o_que\": \"Acesso ao registry quay.io\",\n      \"observado\": \"\"\n    },\n    {\n      \"estado\": \"ok\",\n      \"o_que\": \"código do ambiente\",\n      \"observado\": \"6edd2e\"\n    }\n  ],\n  \"conferencia\": \"sha256:81325e837fa68c579828512e0be6e3585ac0ec7eb9f3265c6e25fbf736740fd4\"\n}",
       "obs": "",
       "onde": "toolbox"
     }
