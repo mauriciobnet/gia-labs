@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Laboratório GIA</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<style>
+/* Sem fontes ou scripts externos: a stack tem que abrir sem internet. */
+:root{
+  --ground:#F8F6EF; --panel:#FFFFFF; --ink:#1E1E1E; --muted:#6E6A5F; --line:#DCD8CB;
+  --accent:#FFD342; --accent-line:#E0B62B; --soft:#F1EEE3;
+  --ok:#2F7D4F; --ok-bg:#E7F2EA; --no:#B3261E; --no-bg:#FAEAE8;
+  --warn:#9A6B00; --warn-bg:#FBF0D6; --off:#9C988C; --off-bg:#EFECE3;
+  --sombra:0 1px 2px rgba(30,30,30,.05),0 8px 24px rgba(30,30,30,.06);
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --ground:#17171A; --panel:#1F1F23; --ink:#EFEDE6; --muted:#A4A093; --line:#34343A;
+    --accent:#F2C53D; --accent-line:#8A6F16; --soft:#26262B;
+    --ok:#5BBE84; --ok-bg:#1B2A22; --no:#FF6B5E; --no-bg:#2C1C1A;
+    --warn:#E0B441; --warn-bg:#2B2416; --off:#7E7A70; --off-bg:#232328;
+    --sombra:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35);
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:80px}
+body{margin:0;background:var(--ground);color:var(--ink);font-size:16px;line-height:1.55;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding:0 16px}
+a{color:inherit}
+header.topo{position:sticky;top:0;z-index:20;background:var(--ground);border-bottom:1px solid var(--line)}
+header.topo .wrap{display:flex;align-items:center;gap:16px;min-height:62px;flex-wrap:wrap;padding-top:10px;padding-bottom:10px}
+.marca{font-weight:700;font-size:18px;letter-spacing:-.01em;display:flex;align-items:center;gap:9px}
+.marca svg{width:24px;height:24px;flex:none}
+.marca span{color:var(--muted);font-weight:500}
+.placar{display:flex;gap:7px;flex-wrap:wrap;margin-left:auto;align-items:center}
+.pino{font-size:12.5px;font-weight:600;border-radius:999px;padding:4px 11px;border:1px solid var(--line);background:var(--panel);white-space:nowrap}
+.pino.ok{color:var(--ok);border-color:var(--ok);background:var(--ok-bg)}
+.pino.subindo{color:var(--warn);border-color:var(--warn);background:var(--warn-bg)}
+.pino.rota{color:var(--no);border-color:var(--no);background:var(--no-bg)}
+.pino.parado{color:var(--off);background:var(--off-bg)}
+.relogio{font-family:var(--mono);font-size:11.5px;color:var(--muted);white-space:nowrap}
+h1{font-size:clamp(25px,4.5vw,36px);line-height:1.15;letter-spacing:-.022em;margin:34px 0 10px}
+h1 em{font-style:normal;color:var(--muted);font-weight:400}
+.lead{color:var(--muted);max-width:75ch;margin:0 0 6px}
+h2{font-size:19px;letter-spacing:-.01em;margin:40px 0 4px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+h2 small{font-weight:400;font-size:13.5px;color:var(--muted)}
+.mapa{background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:var(--sombra);
+  padding:14px 16px;margin-top:14px;overflow-x:auto}
+.mapa svg{display:block;width:100%;min-width:760px;height:auto}
+.legenda{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;font-size:12.5px;color:var(--muted)}
+.legenda i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:middle;border:1px solid}
+.grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px;margin-top:14px}
+.cartao{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--off);
+  border-radius:14px;box-shadow:var(--sombra);padding:15px 16px;display:flex;flex-direction:column;gap:9px}
+.cartao.ok{border-left-color:var(--ok)}
+.cartao.subindo{border-left-color:var(--warn)}
+.cartao.rota{border-left-color:var(--no)}
+.cartao .linha1{display:flex;align-items:center;gap:10px}
+.cartao h3{margin:0;font-size:16px;letter-spacing:-.01em;flex:1}
+.selo{font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;border-radius:999px;padding:3px 10px;white-space:nowrap}
+.selo.ok{color:var(--ok);background:var(--ok-bg)}
+.selo.subindo{color:var(--warn);background:var(--warn-bg)}
+.selo.rota{color:var(--no);background:var(--no-bg)}
+.selo.parado{color:var(--off);background:var(--off-bg)}
+.resumo{color:var(--muted);font-size:14px;margin:0}
+.detalhe{font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.dica{font-size:13px;background:var(--warn-bg);color:var(--warn);border-radius:9px;padding:8px 11px}
+.extra{font-family:var(--mono);font-size:11.5px;color:var(--muted);word-break:break-all}
+.extra.alerta{color:var(--no)}
+.abre{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:13px;font-weight:600;
+  text-decoration:none;border:1px solid var(--line);background:var(--soft);border-radius:9px;padding:7px 11px;width:fit-content}
+.abre:hover{border-color:var(--accent-line);background:var(--accent);color:#1E1E1E}
+.abre.mudo{opacity:.5;pointer-events:none}
+.creds{font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:2px}
+.creds b{color:var(--ink);font-weight:600}
+.creds code{font-family:var(--mono);font-size:12.5px}
+.rolagem{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;min-width:560px;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);
+  border-radius:14px;overflow:hidden;box-shadow:var(--sombra);margin-top:14px;font-size:14px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line)}
+th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+tr:last-child td{border-bottom:none}
+td code{font-family:var(--mono);font-size:13px}
+.cmd{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);
+  border-radius:11px;padding:10px 12px;margin-top:9px;box-shadow:var(--sombra)}
+.cmd .txt{flex:1;min-width:0}
+.cmd .rot{font-size:12.5px;color:var(--muted)}
+.cmd code{display:block;font-family:var(--mono);font-size:13px;overflow-x:auto;white-space:pre;max-width:100%}
+.cmd button{flex:none;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;border:1px solid var(--line);
+  background:var(--soft);color:var(--ink);border-radius:8px;padding:6px 12px}
+.cmd button:hover{border-color:var(--accent-line);background:var(--accent);color:#1E1E1E}
+/* A trilha é a primeira coisa da página. Cada etapa tem um dos quatro estados que o
+   estado.py calcula, e a cor é a única linguagem que funciona de longe, quando o
+   professor olha a tela do aluno do outro lado da sala. */
+.trilha{display:grid;grid-template-columns:repeat(auto-fit,minmax(196px,1fr));gap:12px;margin-top:16px}
+.etapa{position:relative;background:var(--panel);border:1px solid var(--line);border-top:4px solid var(--off);
+  border-radius:14px;box-shadow:var(--sombra);padding:13px 14px 14px;display:flex;flex-direction:column;gap:3px}
+.etapa.concluida{border-top-color:var(--ok);background:var(--ok-bg)}
+.etapa.problema{border-top-color:var(--no);background:var(--no-bg)}
+.etapa.disponivel{border-top-color:var(--accent-line)}
+.etapa.bloqueada{opacity:.62}
+.etapa .n{font-weight:700;font-size:15px;letter-spacing:-.01em}
+.etapa .t{font-size:13px;color:var(--muted);line-height:1.35}
+.etapa .e{font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-top:6px;
+  display:flex;align-items:center;gap:6px}
+.etapa .e::before{content:"";width:9px;height:9px;border-radius:50%;background:currentColor;flex:none}
+.etapa.concluida .e{color:var(--ok)}
+.etapa.problema .e{color:var(--no)}
+.etapa.disponivel .e{color:var(--warn)}
+.etapa.bloqueada .e{color:var(--off)}
+.etapa .d{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.35}
+.etapa .acoes{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}
+.etapa .acoes a{font-size:12px;font-weight:600;text-decoration:none;border:1px solid var(--line);
+  background:var(--panel);border-radius:999px;padding:3px 10px;white-space:nowrap}
+.etapa .acoes a:hover{border-color:var(--ink)}
+.etapa .acoes a.forte{border-color:var(--accent-line);background:var(--accent);color:#1E1E1E}
+
+/* Identificação do aluno. Sem isso o arquivo de entrega sai anônimo, e é melhor
+   descobrir isso na primeira tela do que na hora de subir no Moodle. */
+.aluno{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px;padding:12px 14px;
+  background:var(--panel);border:1px solid var(--line);border-radius:12px;font-size:13.5px}
+.aluno.faltando{border-color:var(--accent-line);background:var(--warn-bg)}
+.aluno b{font-weight:700}
+.aluno code{font-family:var(--mono);font-size:12px;background:var(--soft);border:1px solid var(--line);
+  border-radius:6px;padding:2px 6px;word-break:break-all}
+.aluno .cinza{color:var(--muted)}
+.avisos{background:var(--no-bg);border:1px solid var(--no);border-radius:14px;padding:14px 16px;margin-top:14px}
+.avisos h3{margin:0 0 6px;font-size:15px;color:var(--no)}
+.avisos p{margin:0;font-size:14px;color:var(--ink);opacity:.9}
+.proximo{background:var(--accent);color:#1E1E1E;border:1px solid var(--accent-line);border-radius:14px;
+  padding:14px 16px;margin-top:14px;font-size:15px}
+.proximo b{display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;opacity:.7;margin-bottom:3px}
+footer{margin-top:46px;border-top:1px solid var(--line);padding:22px 0 60px;color:var(--muted);font-size:13.5px}
+footer a{color:var(--muted)}
+/* estados no diagrama */
+.no rect{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.no text{fill:var(--muted);font-size:12.5px;font-weight:600}
+.no.ok rect{fill:var(--ok-bg);stroke:var(--ok)} .no.ok text{fill:var(--ok)}
+.no.subindo rect{fill:var(--warn-bg);stroke:var(--warn)} .no.subindo text{fill:var(--warn)}
+.no.rota rect{fill:var(--no-bg);stroke:var(--no)} .no.rota text{fill:var(--no)}
+.no.parado rect{fill:var(--off-bg);stroke:var(--line);stroke-dasharray:4 4} .no.parado text{fill:var(--off)}
+.no.fixo rect{fill:var(--accent);stroke:var(--accent-line)} .no.fixo text{fill:#1E1E1E}
+.lig{stroke:var(--line);stroke-width:1.5;fill:none}
+.lig.viva{stroke:var(--ok);opacity:.85}
+.rot-svg{fill:var(--muted);font-size:11px;font-family:var(--mono)}
+@media (max-width:680px){
+  .grade{grid-template-columns:1fr}
+  .placar{margin-left:0;width:100%}
+}
+</style>
+</head>
+<body>
+<header class="topo"><div class="wrap">
+  <div class="marca">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#FFD342"></rect><path d="M16 7a5 5 0 0 1 5 5v2h1.5a1.5 1.5 0 0 1 1.5 1.5v8A1.5 1.5 0 0 1 22.5 25h-13A1.5 1.5 0 0 1 8 23.5v-8A1.5 1.5 0 0 1 9.5 14H11v-2a5 5 0 0 1 5-5zm0 3a2 2 0 0 0-2 2v2h4v-2a2 2 0 0 0-2-2z" fill="#1E1E1E"></path></svg>
+    Laboratório GIA <span id="porta-topo"></span>
+  </div>
+  <div class="placar" id="placar"></div>
+  <div class="relogio" id="relogio">sondando…</div>
+</div></header>
+
+<main class="wrap">
+  <h1>Sua trilha <em>de laboratórios</em></h1>
+  <p class="lead">Cada etapa fica verde quando o script daquele laboratório confirma que o ambiente
+  está do jeito esperado. Não existe botão para marcar manualmente: a cor vem da verificação, e a
+  mesma verificação gera o arquivo que você entrega no Moodle.</p>
+
+  <div id="aluno"></div>
+  <div class="trilha" id="progresso"></div>
+  <div id="proximo"></div>
+
+  <h2>O que está no ar agora <small>diagnóstico, para quando alguma etapa não fecha</small></h2>
+  <p class="lead">O painel pergunta a cada quatro segundos se cada serviço responde, e separa três
+  coisas que parecem iguais quando algo não abre: o container ainda não existe, o container existe
+  mas ainda está subindo, ou o serviço está de pé e a rota não responde.</p>
+
+  <div class="mapa">
+    <svg viewBox="0 0 820 340" role="img" aria-label="Diagrama da stack: navegador, Traefik e os serviços, coloridos pelo estado atual">
+      <defs>
+        <marker id="seta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="currentColor"></path>
+        </marker>
+      </defs>
+      <g id="ligacoes" color="var(--muted)"></g>
+      <g class="no fixo"><rect x="10" y="120" width="104" height="50" rx="9"></rect>
+        <text x="62" y="150" text-anchor="middle">navegador</text></g>
+      <path class="lig viva" d="M116 145 L 134 145" marker-end="url(#seta)" color="var(--muted)"></path>
+      <text class="rot-svg" x="200" y="101" text-anchor="middle" id="rot-porta"></text>
+      <g class="no" id="no-traefik"><rect x="140" y="110" width="120" height="70" rx="10"></rect>
+        <text x="200" y="149" text-anchor="middle">Traefik</text></g>
+      <g id="nos"></g>
+    </svg>
+    <div class="legenda">
+      <span><i style="background:var(--ok-bg);border-color:var(--ok)"></i>no ar</span>
+      <span><i style="background:var(--warn-bg);border-color:var(--warn)"></i>subindo</span>
+      <span><i style="background:var(--no-bg);border-color:var(--no)"></i>rota não responde</span>
+      <span><i style="background:var(--off-bg);border-color:var(--line)"></i>não iniciado</span>
+    </div>
+  </div>
+
+  <div id="grupos"></div>
+
+  <h2 id="credenciais">Credenciais do laboratório <small>todas fracas de propósito, para caber no roteiro</small></h2>
+  <div class="rolagem"><table><thead><tr><th>Onde</th><th>Usuário</th><th>Senha</th><th>Serve para</th></tr></thead>
+  <tbody id="tabela-cred"></tbody></table></div>
+
+  <h2 id="comandos">Comandos <small>rode na pasta <code>stack/</code></small></h2>
+  <div id="cmds"></div>
+
+  <h2>Antes de sair daqui</h2>
+  <div class="avisos">
+    <h3>Isto é um laboratório, não um ambiente de produção</h3>
+    <p>Senhas triviais, HTTP sem TLS, segredos de cliente no arquivo do Compose, OpenBao em modo dev
+    (cofre destravado e token root fixo) e senha em texto claro no seed do diretório. Tudo isso é
+    deliberado, para o roteiro caber no tempo de aula. A porta é publicada em todas as interfaces da
+    máquina, então qualquer pessoa na mesma rede alcança esta stack: não suba isto em wi-fi de
+    aeroporto, café ou evento. Ao terminar, derrube com <code>down -v</code>.</p>
+  </div>
+
+  <h2>Material</h2>
+  <p class="lead">Tutorial visual com as telas de cada laboratório: <a href="/tutorial/" target="_blank" rel="noopener">/tutorial/</a>
+  (aparece quando a pasta <code>stack/tutorial</code> está gerada). As apostilas e os slides ficam fora da stack.</p>
+</main>
+
+<footer class="wrap">
+  <p>Gerenciamento de Identidade e Acesso · CESC · UTFPR Curitiba. Painel servido pelo serviço
+  <code>home</code> da própria stack, sem acesso ao socket do Docker: o estado vem de sondas de rede.</p>
+</footer>
+
+<script>
+const $ = (s, r) => (r || document).querySelector(s);
+const NOMES = {ok: "no ar", subindo: "subindo", rota: "rota não responde", parado: "não iniciado"};
+const ORDEM = ["whoami", "lam", "keycloak", "glpi", "grafana", "app", "idp", "api", "bao"];
+const NO_ID = {whoami: "whoami", lam: "lam", keycloak: "keycloak", grafana: "grafana",
+               app: "app", idp: "idp", api: "api", openbao: "bao", postgres: "postgres",
+               openldap: "openldap", glpi: "glpi", glpidb: "glpidb"};
+const GRUPOS = [["base", "Base", "sempre no ar: Labs 1, 2 e 5"],
+                ["lab3", "Labs 3 e 4", "o diretório visto pelas aplicações, e depois protegido por TLS"],
+                ["lab6", "Lab 6", "SSO com OIDC, no mesmo Grafana do bloco acima"],
+                ["lab7", "Lab 7", "federação SAML"], ["lab8", "Lab 8", "autorização fina"],
+                ["lab9", "Lab 9", "segredos e identidades de máquina"]];
+let porta = 18080, ultimo = 0;
+
+function esc(t){ const d = document.createElement("div"); d.textContent = t == null ? "" : t; return d.innerHTML; }
+
+function copiar(texto, botao){
+  const feito = () => { const a = botao.textContent; botao.textContent = "copiado"; setTimeout(() => botao.textContent = a, 1200); };
+  if (navigator.clipboard && window.isSecureContext) { navigator.clipboard.writeText(texto).then(feito).catch(() => manual(texto, feito)); }
+  else manual(texto, feito);
+}
+function manual(texto, feito){
+  const t = document.createElement("textarea");
+  t.value = texto; t.style.position = "fixed"; t.style.opacity = "0";
+  document.body.appendChild(t); t.select();
+  try { document.execCommand("copy"); feito(); } catch (e) {}
+  document.body.removeChild(t);
+}
+
+/* ---------- diagrama ---------- */
+function montarDiagrama(){
+  const nos = $("#nos"), ligs = $("#ligacoes");
+  let svgNos = "", svgLigs = "";
+  ORDEM.forEach((id, i) => {
+    const y = 8 + i * 36;
+    svgNos += `<g class="no parado" id="no-${id}"><rect x="320" y="${y}" width="190" height="30" rx="8"></rect>`
+            + `<text x="415" y="${y + 20}" text-anchor="middle" data-base="${id}.localhost">${id}.localhost:${porta}</text></g>`;
+    svgLigs += `<path class="lig" id="lig-${id}" d="M262 145 C 292 145, 292 ${y + 15}, 314 ${y + 15}" marker-end="url(#seta)"></path>`;
+  });
+  svgNos += `<g class="no parado" id="no-openldap"><rect x="620" y="62" width="190" height="30" rx="8"></rect>`
+          + `<text x="715" y="82" text-anchor="middle">openldap</text></g>`;
+  svgNos += `<g class="no parado" id="no-postgres"><rect x="620" y="296" width="190" height="30" rx="8"></rect>`
+          + `<text x="715" y="316" text-anchor="middle">postgres</text></g>`;
+  svgNos += `<g class="no parado" id="no-glpidb"><rect x="620" y="152" width="190" height="30" rx="8"></rect>`
+          + `<text x="715" y="172" text-anchor="middle">glpidb</text></g>`;
+  svgLigs += `<path class="lig" id="lig-lam-ldap" d="M512 59 C 560 59, 570 71, 614 74" marker-end="url(#seta)"></path>`;
+  svgLigs += `<path class="lig" id="lig-kc-ldap" d="M512 95 C 560 95, 570 83, 614 80" marker-end="url(#seta)"></path>`;
+  svgLigs += `<path class="lig" id="lig-bao-pg" d="M512 311 L 614 311" marker-end="url(#seta)"></path>`;
+  svgLigs += `<path class="lig" id="lig-glpi-db" d="M512 131 C 560 131, 570 150, 614 165" marker-end="url(#seta)"></path>`;
+  svgLigs += `<path class="lig" id="lig-glpi-ldap" d="M512 125 C 566 118, 572 96, 614 86" marker-end="url(#seta)"></path>`;
+  svgLigs += `<path class="lig" id="lig-graf-ldap" d="M512 167 C 574 150, 578 100, 614 90" marker-end="url(#seta)"></path>`;
+  nos.innerHTML = svgNos; ligs.innerHTML = svgLigs;
+}
+
+function pintarDiagrama(servicos){
+  const por = {}; servicos.forEach(s => por[s.id] = s);
+  Object.entries(NO_ID).forEach(([sid, nid]) => {
+    const g = document.getElementById("no-" + nid);
+    if (g && por[sid]) g.setAttribute("class", "no " + por[sid].estado);
+  });
+  const t = document.getElementById("no-traefik");
+  if (por.traefik) t.setAttribute("class", "no " + (por.traefik.estado === "ok" ? "fixo" : por.traefik.estado));
+  ORDEM.forEach(id => {
+    const chave = id === "bao" ? "openbao" : id;
+    const l = document.getElementById("lig-" + id);
+    if (l && por[chave]) l.setAttribute("class", "lig" + (por[chave].estado === "ok" ? " viva" : ""));
+  });
+  const vivo = (a, b) => (por[a] || {}).estado === "ok" && (por[b] || {}).estado === "ok";
+  [["lig-lam-ldap", "lam", "openldap"], ["lig-kc-ldap", "keycloak", "openldap"],
+   ["lig-bao-pg", "openbao", "postgres"], ["lig-glpi-db", "glpi", "glpidb"],
+   ["lig-glpi-ldap", "glpi", "openldap"], ["lig-graf-ldap", "grafana", "openldap"]]
+    .forEach(([id, a, b]) => { const e = document.getElementById(id); if (e) e.setAttribute("class", "lig" + (vivo(a, b) ? " viva" : "")); });
+}
+
+/* ---------- cartões ---------- */
+function cartao(s){
+  const cred = (s.cred || []).map(c => `<div><b>${esc(c[0] || "acesso")}:</b> <code>${esc(c[1])}</code>${c[2] ? " / <code>" + esc(c[2]) + "</code>" : ""}</div>`).join("");
+  const link = s.url
+    ? `<a class="abre ${s.estado === "ok" ? "" : "mudo"}" href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.url.replace("http://", ""))} &nearr;</a>`
+    : `<div class="detalhe">${esc(s.gui)}</div>`;
+  return `<article class="cartao ${s.estado}">
+    <div class="linha1"><h3>${esc(s.nome)}</h3><span class="selo ${s.estado}">${NOMES[s.estado]}</span></div>
+    <p class="resumo">${esc(s.resumo)}</p>
+    ${link}
+    <div class="detalhe">${esc(s.lab)} · ${esc(s.detalhe)}</div>
+    ${s.extra ? `<div class="extra ${s.extra.alerta ? "alerta" : ""}">${esc(s.extra.texto)}</div>` : ""}
+    ${cred ? `<div class="creds">${cred}</div>` : ""}
+    ${s.estado === "parado" && s.perfil ? `<div class="dica">este serviço está no perfil <b>${esc(s.perfil)}</b>, que não foi ativado:<br><code>docker compose --profile ${esc(s.perfil)} up -d</code></div>` : ""}
+    ${s.dica && s.estado !== "ok" && s.estado !== "parado" ? `<div class="dica">${esc(s.dica)}</div>` : ""}
+  </article>`;
+}
+
+function montarGrupos(servicos){
+  let html = "";
+  GRUPOS.forEach(([g, titulo, sub]) => {
+    const lista = servicos.filter(s => s.grupo === g);
+    if (!lista.length) return;
+    const fora = lista.filter(s => s.estado === "parado").length === lista.length;
+    html += `<h2 id="g-${g}">${titulo} <small>${sub}${fora && g !== "base" ? " · não iniciado" : ""}</small></h2>`;
+    html += `<div class="grade">` + lista.map(cartao).join("") + `</div>`;
+  });
+  $("#grupos").innerHTML = html;
+}
+
+/* ---------- placar, próximo passo, comandos ---------- */
+const EST_LAB = {concluida: "concluída", problema: "revisar", disponivel: "pode começar", bloqueada: "ainda não"};
+function montarProgresso(labs){
+  if (!labs || !labs.length) return;
+  // Rótulo de cada etapa pelo id, para a linha "termine antes o ...". Antes havia um
+  // "1b" escrito na mão aqui, e a etapa 1C apareceria como "Lab 4".
+  const ROTULO = {};
+  labs.forEach(l => { ROTULO[l.id] = l.rotulo; });
+  $("#progresso").innerHTML = labs.map(l => {
+    let quando = "";
+    if (l.quando) {
+      const d = new Date(l.quando);
+      if (!isNaN(d)) quando = d.toLocaleString("pt-BR", {day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit"});
+    }
+    // Uma linha só, dizendo a próxima coisa a fazer. O aluno perdido lê daqui.
+    let detalhe;
+    if (l.estado === "concluida")      detalhe = l.resumo + (quando ? " · " + quando : "");
+    else if (l.estado === "problema")  detalhe = l.falhas + " verificação(ões) a corrigir" + (quando ? " · " + quando : "");
+    else if (l.estado === "bloqueada") detalhe = "termine antes o " + (ROTULO[l.depende] || ("Lab " + l.depende));
+    else                               detalhe = "rode a verificação deste laboratório";
+
+    const acoes = [];
+    if (l.estado !== "bloqueada") acoes.push(`<a href="/tutorial/${esc(l.tutorial)}/" target="_blank" rel="noopener" title="passo a passo com as telas (abre em outra guia)">tutorial</a>`);
+    if (l.evidencia) acoes.push(`<a class="forte" href="/evidencia/${esc(l.id)}" download title="arquivo para entregar no Moodle">evidência</a>`);
+
+    return `<div class="etapa ${l.estado}">
+      <div class="n">${esc(l.rotulo)}</div>
+      <div class="t">${esc(l.titulo)}</div>
+      <div class="e">${EST_LAB[l.estado]}</div>
+      <div class="d">${esc(detalhe)}</div>
+      ${acoes.length ? `<div class="acoes">${acoes.join("")}</div>` : ""}
+    </div>`;
+  }).join("");
+}
+
+function montarAluno(aluno, labs){
+  const entregues = (labs || []).filter(l => l.evidencia).length;
+  if (!aluno) {
+    $("#aluno").innerHTML = `<div class="aluno faltando">
+      <b>Identifique-se antes de começar.</b>
+      <span class="cinza">Sem isto o arquivo de entrega sai sem nome e não serve para o Moodle.</span>
+      <code>docker compose exec toolbox python3 /work/scripts/evidencia.py aluno --nome "Seu Nome" --ra 000000</code>
+    </div>`;
+    return;
+  }
+  $("#aluno").innerHTML = `<div class="aluno">
+    <b>${esc(aluno.nome)}</b>
+    ${aluno.ra ? `<span class="cinza">RA ${esc(aluno.ra)}</span>` : ""}
+    <span class="cinza">instalação <code>${esc(aluno.instalacao)}</code></span>
+    <span class="cinza">${entregues} evidência(s) gerada(s)</span>
+  </div>`;
+}
+
+function montarPlacar(servicos){
+  const c = {ok: 0, subindo: 0, rota: 0, parado: 0};
+  servicos.forEach(s => c[s.estado]++);
+  const p = [];
+  if (c.ok) p.push(`<span class="pino ok">${c.ok} no ar</span>`);
+  if (c.subindo) p.push(`<span class="pino subindo">${c.subindo} subindo</span>`);
+  if (c.rota) p.push(`<span class="pino rota">${c.rota} com problema</span>`);
+  if (c.parado) p.push(`<span class="pino parado">${c.parado} não iniciado</span>`);
+  $("#placar").innerHTML = p.join("");
+  return c;
+}
+
+function montarProximo(servicos, c, labs){
+  const por = {}; servicos.forEach(s => por[s.id] = s);
+  const base = ["traefik", "whoami", "openldap", "lam", "keycloak"];
+  let texto, rotulo = "próximo passo";
+
+  // A trilha é quem manda: ela já sabe onde a pessoa parou. As sondas só entram
+  // quando o ambiente está atrapalhando, que é quando a trilha não explica nada.
+  const pendente = (labs || []).find(l => l.estado === "problema")
+                || (labs || []).find(l => l.estado === "disponivel");
+
+  if (c.subindo) {
+    rotulo = "aguarde";
+    texto = "Alguns containers ainda estão subindo. O Keycloak leva de 30 a 90 s no primeiro start e o LAM cerca de 40 s. Espere esta tela ficar verde antes de rodar os scripts.";
+  } else if (base.some(id => por[id] && por[id].estado === "rota")) {
+    rotulo = "atenção";
+    texto = "Algum serviço da base está de pé mas sem rota. Veja a dica no cartão vermelho e, se persistir, rode docker compose logs do serviço.";
+  } else if (!base.every(id => por[id] && por[id].estado === "ok")) {
+    rotulo = "comece por aqui";
+    texto = "A stack ainda não está completa. Suba com docker compose up -d --build e volte a esta página.";
+  } else if (!pendente) {
+    rotulo = "trilha completa";
+    texto = "Todas as etapas estão verdes. Confira se as evidências foram entregues no Moodle e derrube a stack com down -v ao terminar.";
+  } else if (pendente.estado === "problema") {
+    rotulo = "revisar";
+    texto = pendente.rotulo + ": " + pendente.falhas + " verificação(ões) falharam. Rode de novo e leia as linhas em vermelho: "
+          + pendente.comando;
+  } else if (pendente.perfil && por[pendente.perfil === "lab3" ? "glpi" : "grafana"]
+             && por[pendente.perfil === "lab3" ? "glpi" : "grafana"].estado === "parado") {
+    rotulo = "próximo passo";
+    texto = pendente.rotulo + " (" + pendente.titulo + ") precisa do perfil " + pendente.perfil
+          + ": docker compose --profile " + pendente.perfil + " up -d";
+  } else {
+    rotulo = "próximo passo";
+    texto = pendente.rotulo + ": " + pendente.titulo + ". Abra o tutorial da etapa e, ao terminar, rode "
+          + pendente.comando;
+  }
+  $("#proximo").innerHTML = `<div class="proximo"><b>${rotulo}</b>${esc(texto)}</div>`;
+}
+
+/* Só os comandos que não cabem em tutorial: subir, abrir o toolbox, olhar log,
+   recomeçar. O passo a passo de cada lab mora no tutorial visual, e o botão de cada
+   etapa da trilha leva direto para lá. Painel que vira apostila deixa de ser lido. */
+const COMANDOS = [
+  ["subir a base (Labs 1, 2 e 5)", "docker compose up -d --build"],
+  ["abrir o toolbox (é de onde os scripts rodam)", "docker compose exec toolbox bash"],
+  ["ver o que está de pé", "docker compose ps"],
+  ["log de um serviço", "docker compose logs -f keycloak"],
+  ["apagar tudo e recomeçar do zero", "docker compose --profile lab3 --profile lab6 --profile lab7 --profile lab8 --profile lab9 --profile tools down -v"],
+];
+
+function montarComandos(){
+  $("#cmds").innerHTML = COMANDOS.map(([rot, cmd], i) =>
+    `<div class="cmd"><div class="txt"><div class="rot">${esc(rot)}</div><code>${esc(cmd)}</code></div>
+     <button data-i="${i}">copiar</button></div>`).join("");
+  $("#cmds").addEventListener("click", ev => {
+    const b = ev.target.closest("button");
+    if (b) copiar(COMANDOS[+b.dataset.i][1], b);
+  });
+}
+
+function montarCredenciais(servicos){
+  const linhas = [];
+  servicos.forEach(s => (s.cred || []).forEach(c => {
+    linhas.push(`<tr><td>${esc(s.nome)}</td><td><code>${esc(c[1])}</code></td><td>${c[2] ? "<code>" + esc(c[2]) + "</code>" : "<span class=\"detalhe\">sem senha</span>"}</td><td>${esc(c[0] || "")}</td></tr>`);
+  }));
+  $("#tabela-cred").innerHTML = linhas.join("");
+}
+
+/* ---------- ciclo ---------- */
+async function atualizar(){
+  try {
+    const r = await fetch("/api/estado", {cache: "no-store"});
+    const d = await r.json();
+    porta = d.porta;
+    $("#porta-topo").textContent = "· porta " + porta;
+    $("#rot-porta").textContent = "porta " + porta;
+    document.querySelectorAll("#nos text").forEach(t => {
+      if (t.dataset.base) t.textContent = t.dataset.base + ":" + porta;
+    });
+    document.title = "Laboratório GIA :" + porta;
+    if (d.carregando) { $("#relogio").textContent = "primeira sondagem…"; return; }
+    const c = montarPlacar(d.servicos);
+    pintarDiagrama(d.servicos);
+    montarGrupos(d.servicos);
+    montarCredenciais(d.servicos);
+    montarProgresso(d.labs);
+    montarAluno(d.aluno, d.labs);
+    montarProximo(d.servicos, c, d.labs || []);
+    ultimo = Date.now();
+  } catch (e) {
+    $("#relogio").textContent = "o painel perdeu contato com o próprio servidor";
+  }
+}
+function tique(){
+  if (!ultimo) return;
+  const s = Math.round((Date.now() - ultimo) / 1000);
+  $("#relogio").textContent = s < 2 ? "atualizado agora" : "atualizado há " + s + " s";
+}
+montarDiagrama();
+montarComandos();
+atualizar();
+setInterval(atualizar, 4000);
+setInterval(tique, 1000);
+</script>
+</body>
+</html>

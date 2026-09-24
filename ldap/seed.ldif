@@ -1,0 +1,63 @@
+dn: ou=people,dc=acme,dc=edu,dc=br
+objectClass: organizationalUnit
+ou: people
+
+dn: ou=groups,dc=acme,dc=edu,dc=br
+objectClass: organizationalUnit
+ou: groups
+
+dn: uid=ana.souza,ou=people,dc=acme,dc=edu,dc=br
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+uid: ana.souza
+cn: Ana Souza
+sn: Souza
+givenName: Ana
+mail: ana.souza@acme.edu.br
+uidNumber: 10001
+gidNumber: 10001
+homeDirectory: /home/ana.souza
+loginShell: /bin/bash
+userPassword: Senha@123
+
+dn: uid=bruno.lima,ou=people,dc=acme,dc=edu,dc=br
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+uid: bruno.lima
+cn: Bruno Lima
+sn: Lima
+givenName: Bruno
+mail: bruno.lima@acme.edu.br
+uidNumber: 10002
+gidNumber: 10002
+homeDirectory: /home/bruno.lima
+loginShell: /bin/bash
+userPassword: Senha@123
+
+dn: uid=carla.dias,ou=people,dc=acme,dc=edu,dc=br
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+uid: carla.dias
+cn: Carla Dias
+sn: Dias
+givenName: Carla
+mail: carla.dias@acme.edu.br
+uidNumber: 10003
+gidNumber: 10003
+homeDirectory: /home/carla.dias
+loginShell: /bin/bash
+userPassword: Senha@123
+
+dn: cn=ti,ou=groups,dc=acme,dc=edu,dc=br
+objectClass: groupOfNames
+cn: ti
+member: uid=ana.souza,ou=people,dc=acme,dc=edu,dc=br
+member: uid=bruno.lima,ou=people,dc=acme,dc=edu,dc=br
+
+dn: cn=professores,ou=groups,dc=acme,dc=edu,dc=br
+objectClass: groupOfNames
+cn: professores
+member: uid=carla.dias,ou=people,dc=acme,dc=edu,dc=br

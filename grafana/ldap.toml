@@ -1,0 +1,63 @@
+# Lab 1B: o Grafana falando LDAP direto com o diretório da ACME.
+#
+# Repare no que este arquivo entrega e no que ele custa. A aplicação precisa saber
+# o endereço do diretório, uma credencial de serviço para procurar o usuário, o
+# formato do filtro, onde ficam as pessoas, onde ficam os grupos e como a associação
+# é escrita. Cada aplicação nova repete tudo isso, e cada uma passa a ver a senha
+# digitada pelo usuário. É esse custo que a federação do Lab 3 elimina.
+#
+# ATENÇÃO À ORDEM DAS LINHAS. Em TOML, tudo que vem depois de um cabeçalho de tabela,
+# como [servers.attributes], pertence àquela tabela até aparecer o próximo cabeçalho.
+# Por isso TODAS as chaves do servidor, inclusive as três de busca de grupos, ficam
+# aqui em cima, antes de [servers.attributes]. Se você mover qualquer group_search_*
+# para depois daquele cabeçalho, o Grafana passa a não enxergar a configuração de
+# grupos, não reclama de nada, e todo mundo entra como Viewer.
+
+[[servers]]
+host = "openldap"
+port = 389
+use_ssl = false
+start_tls = false
+ssl_skip_verify = true
+
+# Credencial de serviço: o Grafana se autentica para PROCURAR o usuário. Em produção
+# seria uma conta somente leitura, nunca o administrador do diretório.
+bind_dn = "cn=admin,dc=acme,dc=edu,dc=br"
+bind_password = "admin"
+
+# %s é substituído pelo que a pessoa digitou no campo de usuário.
+search_filter = "(uid=%s)"
+search_base_dns = ["ou=people,dc=acme,dc=edu,dc=br"]
+
+# O diretório da ACME usa groupOfNames, onde a associação mora na ENTRADA DO GRUPO,
+# no atributo member, com o DN completo da pessoa. Por isso o Grafana precisa fazer
+# uma segunda busca: sem o overlay memberof, a entrada da pessoa não diz a que grupos
+# ela pertence. É a mesma pergunta feita ao contrário.
+#
+# O "dn" da última linha diz ao Grafana para substituir o %s do filtro pelo DN completo
+# da pessoa, e não pelo login dela. É o que faz (member=%s) virar
+# (member=uid=ana.souza,ou=people,dc=acme,dc=edu,dc=br).
+group_search_base_dns = ["ou=groups,dc=acme,dc=edu,dc=br"]
+group_search_filter = "(&(objectClass=groupOfNames)(member=%s))"
+group_search_filter_user_attribute = "dn"
+
+[servers.attributes]
+name = "givenName"
+surname = "sn"
+username = "uid"
+email = "mail"
+
+# Do grupo do diretório para o papel dentro da aplicação. Esta tradução é a mesma
+# ideia que volta no Lab 3 como claim "groups" dentro do token.
+[[servers.group_mappings]]
+group_dn = "cn=ti,ou=groups,dc=acme,dc=edu,dc=br"
+org_role = "Admin"
+
+[[servers.group_mappings]]
+group_dn = "cn=professores,ou=groups,dc=acme,dc=edu,dc=br"
+org_role = "Editor"
+
+# Qualquer pessoa do diretório que não esteja nos grupos acima entra só para ver.
+[[servers.group_mappings]]
+group_dn = "*"
+org_role = "Viewer"

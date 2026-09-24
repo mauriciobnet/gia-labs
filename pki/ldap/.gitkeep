@@ -1,0 +1,2 @@
+# Mantém a pasta no repositório. O Lab 4 grava aqui a CA da ACME e o certificado do diretório,
+# e esses arquivos ficam de fora do git (ver .gitignore): cada aluno gera os seus.

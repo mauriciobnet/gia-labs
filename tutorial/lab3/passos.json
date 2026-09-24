@@ -1,0 +1,229 @@
+{
+ "lab": "lab3",
+ "titulo": "Lab 3: o diretório visto pelas aplicações",
+ "subtitulo": "Ligar o GLPI ao OpenLDAP da ACME, ver a mesma pessoa entrar em duas aplicações diferentes e descobrir quem decide o que ela pode fazer",
+ "gerado": "capturas de uma execução real na stack do laboratório, GLPI 10.0.26 e Grafana 11.6.0",
+ "passos": [
+  {
+   "n": 1,
+   "tipo": "term",
+   "titulo": "Subir o bloco do Lab 3",
+   "texto": "O perfil lab3 acrescenta MariaDB, GLPI e Grafana à stack. O GLPI se instala sozinho na primeira subida e só responde depois disso, o que leva cerca de um minuto.",
+   "cmd": "docker compose --profile lab3 up -d",
+   "esperado": "No painel em http://localhost:18080, o grupo Lab 3 com MariaDB, GLPI e Grafana verdes.",
+   "onde": "host",
+   "status": "manual"
+  },
+  {
+   "n": 2,
+   "tipo": "ui",
+   "titulo": "A lista de diretórios começa vazia",
+   "texto": "Entre no GLPI como glpi e vá em Configuração, Autenticação (authentication), Diretórios (directories) LDAP. Não existe diretório nenhum: o GLPI recém instalado só conhece as contas (accounts) locais dele.",
+   "url": "http://glpi.localhost:18080/front/authldap.php",
+   "png": "img/01.jpg",
+   "esperado": "A mensagem Nenhum item encontrado.",
+   "status": "manual"
+  },
+  {
+   "n": 3,
+   "tipo": "ui",
+   "titulo": "O formulário em branco",
+   "texto": "Clique em + Adicionar. São doze campos, e é por isso que existe a linha Pré-configuração no topo: ninguém decora filtro de conexão nem nome de atributo (attribute) de sincronização.",
+   "png": "img/02.jpg",
+   "esperado": "O formulário Novo item, Diretório LDAP, todo vazio.",
+   "status": "manual"
+  },
+  {
+   "n": 4,
+   "tipo": "ui",
+   "titulo": "A pré-configuração OpenLDAP preenche três campos",
+   "texto": "Clique no link OpenLDAP. Ele escreve sozinho o Filtro da conexão (objectClass=inetOrgPerson), o Campo de Login uid e o Campo de sincronização entryuuid. Esses três valores são a diferença entre um diretório OpenLDAP e um Active Directory, onde seriam objectClass=user, samaccountname e objectguid.",
+   "png": "img/03.jpg",
+   "esperado": "Os três campos preenchidos, o resto ainda em branco.",
+   "status": "manual"
+  },
+  {
+   "n": 5,
+   "tipo": "ui",
+   "titulo": "Preencher o que só você sabe",
+   "texto": "Nome ACME, Servidor openldap, Porta 389, BaseDN dc=acme,dc=edu,dc=br, RootDN cn=admin,dc=acme,dc=edu,dc=br e a senha (password) admin. Servidor padrão e Ativo vêm em Não e precisam ir para Sim: um diretório inativo é ignorado na autenticação e o GLPI não avisa, ele só recusa o login depois como se a senha estivesse errada.",
+   "png": "img/04.jpg",
+   "esperado": "O formulário completo, com Ativo e Servidor padrão em Sim. O campo de senha aparece vazio nesta captura porque a senha foi digitada na hora de salvar.",
+   "status": "manual"
+  },
+  {
+   "n": 6,
+   "tipo": "ui",
+   "titulo": "O diretório aparece na lista",
+   "texto": "Depois de + Adicionar, a lista que estava vazia no passo 2 mostra uma linha. Repare na coluna Ativo.",
+   "png": "img/05.jpg",
+   "esperado": "Uma linha: ACME, openldap, Ativo Sim.",
+   "status": "manual"
+  },
+  {
+   "n": 7,
+   "tipo": "ui",
+   "titulo": "Testar a conexão",
+   "texto": "Abra o diretório ACME e vá na aba Testar. Este teste usa o RootDN e a senha de serviço, ou seja, prova que o GLPI consegue se conectar e procurar. Ele não prova que alguém consegue entrar, e passa mesmo com o diretório inativo.",
+   "png": "img/06.jpg",
+   "esperado": "Testado com sucesso: Servidor principal ACME.",
+   "status": "manual"
+  },
+  {
+   "n": 8,
+   "tipo": "ui",
+   "titulo": "A tela de importação",
+   "texto": "Administração, Usuários, botão ... De uma fonte externa, opção Importar novos usuários. A tela oferece filtros por usuário, e-mail, nome, telefone e mais. Deixe tudo em branco.",
+   "url": "http://glpi.localhost:18080/front/ldap.import.php",
+   "png": "img/07.jpg",
+   "esperado": "O bloco Critérios de pesquisa para usuários, com todos os campos vazios.",
+   "status": "manual"
+  },
+  {
+   "n": 9,
+   "tipo": "ui",
+   "titulo": "Quem o filtro alcança",
+   "texto": "Clique em Pesquisar. O GLPI lista todas as entradas que casam com (objectClass=inetOrgPerson) dentro da BaseDN. A coluna Campo de sincronização mostra o entryUUID de cada pessoa, gerado pelo diretório. É por ele que o GLPI vai reconhecer essas contas no futuro, e não pelo DN, que muda quando alguém troca de unidade.",
+   "png": "img/08.jpg",
+   "esperado": "As pessoas do diretório listadas com o entryUUID de cada uma.",
+   "status": "manual"
+  },
+  {
+   "n": 10,
+   "tipo": "ui",
+   "titulo": "Importar",
+   "texto": "Marque a caixa do cabeçalho, clique em Ações, escolha Importar e clique em Enviar.",
+   "png": "img/09.jpg",
+   "esperado": "Item adicionado com sucesso, uma linha por pessoa, e Operação realizada com sucesso.",
+   "status": "manual"
+  },
+  {
+   "n": 11,
+   "tipo": "ui",
+   "titulo": "As pessoas do diretório agora existem no GLPI",
+   "texto": "A lista de usuários mistura as contas locais do GLPI (glpi, tech, normal, post-only) com as que vieram do diretório, já com o e-mail que estava lá no atributo mail.",
+   "png": "img/10.jpg",
+   "esperado": "ana.souza, bruno.lima e carla.dias na lista, com e-mail @acme.edu.br.",
+   "status": "manual"
+  },
+  {
+   "n": 12,
+   "tipo": "ui",
+   "titulo": "O que o GLPI guardou de cada pessoa",
+   "texto": "Na ficha da ana.souza, o bloco Autenticação mostra de qual diretório ela veio, quando foi a última sincronização e o DN completo dela. O nome, o sobrenome e o e-mail vieram do diretório. A senha não está aqui, nem em lugar nenhum do GLPI.",
+   "png": "img/11.jpg",
+   "esperado": "Diretório LDAP: ACME e DN do usuário: uid=ana.souza,ou=people,dc=acme,dc=edu,dc=br.",
+   "status": "manual"
+  },
+  {
+   "n": 13,
+   "tipo": "ui",
+   "titulo": "Autenticação não é autorização",
+   "texto": "A aba Autorizações mostra Root entity com o perfil Self-Service, marcado com (D) de dinâmico. Quem decidiu isso foi o GLPI, na falta de regra em contrário. O diretório disse quem a pessoa é; o que ela pode fazer é decisão de cada aplicação. Em Administração, Regras existe o conjunto que permite dizer, por exemplo, que quem está em cn=ti vira Super-Admin.",
+   "png": "img/12.jpg",
+   "esperado": "Root entity, Self-Service (D).",
+   "status": "manual"
+  },
+  {
+   "n": 14,
+   "tipo": "ui",
+   "titulo": "A segunda aplicação, sem configurar nada",
+   "texto": "O Grafana já subiu ligado ao mesmo diretório pelo arquivo grafana/ldap.toml, que faz na configuração exatamente o que você fez na mão nas telas do GLPI. Repare na tela de login: o formulário de usuário e senha convive com o botão do Keycloak, que é o caminho do Lab 6 e ainda não funciona. O realm acme só é criado no Lab 5, e sem ele o Keycloak não tem como atender o pedido: entre pelo formulário. A mesma pessoa, a mesma senha, duas aplicações que nunca souberam uma da outra.",
+   "url": "http://grafana.localhost:18080",
+   "png": "img/90-grafana-login.jpg",
+   "esperado": "A pessoa entra com o mesmo uid e a mesma senha que usou no GLPI, sem que ninguém tenha cadastrado nada no Grafana.",
+   "status": "manual"
+  },
+  {
+   "n": 15,
+   "tipo": "ui",
+   "titulo": "Onde olhar quando o papel vem errado",
+   "texto": "Entre como admin e vá em Administration, Authentication, LDAP. Esta tela faz duas coisas que valem ouro: mostra se o Grafana conseguiu falar com o diretório, e testa o mapeamento (mapping) de uma pessoa pelo nome de usuário, sem pedir a senha dela. Digite ana.souza e clique em Run.",
+   "url": "http://grafana.localhost:18080/admin/authentication/ldap",
+   "png": "img/91.jpg",
+   "esperado": "openldap 389 com o visto verde, os quatro atributos lidos do diretório ao lado do nome do atributo LDAP que os forneceu, e no rodapé cn=ti,ou=groups,dc=acme,dc=edu,dc=br mapeado para o papel (role) Admin.",
+   "obs": "Repare na coluna LDAP attribute: ela mostra de onde veio cada dado. O First name não é \"o nome\", é o que estava em givenName. Trocar esse atributo no ldap.toml muda o que a aplicação chama de nome.",
+   "status": "manual"
+  },
+  {
+   "n": 16,
+   "tipo": "ui",
+   "titulo": "A mesma tela, outra pessoa, outro papel",
+   "texto": "Agora teste carla.dias. Nada mudou na configuração entre um teste e outro. O que mudou foi o grupo em que a pessoa está no diretório.",
+   "png": "img/92.jpg",
+   "esperado": "cn=professores,ou=groups,dc=acme,dc=edu,dc=br mapeado para Editor.",
+   "obs": "Ana é Admin porque está em cn=ti, Carla é Editor porque está em cn=professores, e quem não estiver em nenhum dos dois cai no mapeamento curinga e entra como Viewer. Essa tradução de grupo do diretório para papel dentro da aplicação é decisão da aplicação, não do diretório, e é exatamente a mesma ideia que volta no Lab 6 dentro de um token.",
+   "status": "manual"
+  },
+  {
+   "n": 17,
+   "tipo": "term",
+   "titulo": "O erro que não dá erro",
+   "texto": "Na montagem deste laboratório, as três chaves de busca de grupos estavam escritas depois do cabeçalho [servers.attributes] do ldap.toml. Em TOML isso não é erro de sintaxe: as chaves simplesmente passam a pertencer àquela tabela. O Grafana carregou o arquivo sem reclamar, não enxergou configuração de grupos, deixou de fazer a segunda busca e devolveu Viewer para todo mundo. Nenhuma mensagem, em nenhum log, apontava a causa. Por isso existe o verificador abaixo.",
+   "cmd": "python3 scripts/conferir-grafana-ldap.py",
+   "esperado": "A lista das chaves no lugar certo e os três mapeamentos de grupo. Se alguma chave de servidor tiver caído dentro de [servers.attributes], ele diz qual e manda mover.",
+   "obs": "Vale a mesma desconfiança para qualquer configuração em TOML, YAML ou INI: sintaxe válida não significa configuração lida. Quando o comportamento não bate com o arquivo, a primeira pergunta é se a aplicação está mesmo enxergando o que você escreveu.",
+   "onde": "host",
+   "status": "manual"
+  },
+  {
+   "n": 18,
+   "tipo": "ui",
+   "titulo": "O filtro de grupos que vem errado",
+   "texto": "O GLPI também sabe descobrir em que grupos a pessoa está, na aba Grupos do diretório. São as mesmas cinco decisões do ldap.toml do Grafana com outros nomes. Só que o campo Filtrar para pesquisar em grupos veio com (objectClass=inetOrgPerson), o filtro de PESSOAS deixado pela pré-configuração. Procurar grupos com um filtro que só acha pessoas não devolve nada, e o GLPI não reclama. Troque por (objectClass=groupOfNames) e salve.",
+   "png": "img/13.jpg",
+   "esperado": "A aba Grupos com Tipos de pesquisa em Em grupos, atributo member e Usar DN na pesquisa em Sim.",
+   "obs": "Repare que este é o mesmo tipo de falha do passo 17, em outra roupa: configuração aceita, configuração ignorada, nenhum erro.",
+   "status": "manual"
+  },
+  {
+   "n": 19,
+   "tipo": "ui",
+   "titulo": "Com o filtro certo, os grupos aparecem",
+   "texto": "Administração, Grupos, botão Link do diretório LDAP, opção Importação dos novos grupos. Marque os dois e importe pelo menu Ações.",
+   "url": "http://glpi.localhost:18080/front/ldap.group.import.php",
+   "png": "img/15.jpg",
+   "esperado": "cn=ti e cn=professores com o DN completo de cada um. Se a lista vier vazia, o filtro não foi salvo.",
+   "status": "manual"
+  },
+  {
+   "n": 20,
+   "tipo": "ui",
+   "titulo": "Os grupos do diretório agora existem no GLPI",
+   "texto": "Os grupos viraram objetos do GLPI, como as pessoas viraram no passo 11. A partir daqui eles podem ser usados como critério de regra.",
+   "png": "img/16.jpg",
+   "esperado": "professores e ti na lista de grupos.",
+   "status": "manual"
+  },
+  {
+   "n": 21,
+   "tipo": "ui",
+   "titulo": "A política: quem está em ti vira Super-Admin",
+   "texto": "Administração, Regras, Regras para associar permissões (permissions) a um usuário, + Adicionar. Nome TI vira Super-Admin, Ativo Sim. Na aba Critérios: Grupo é ti. Na aba Ações: Perfis, Atribuir, Super-Admin.",
+   "png": "img/17.jpg",
+   "esperado": "A regra com um critério e uma ação, ativa.",
+   "obs": "Este é o equivalente das três linhas de group_mappings do ldap.toml, só que o GLPI aceita como critério qualquer atributo do diretório, inclusive o gerente e o número do departamento.",
+   "status": "manual"
+  },
+  {
+   "n": 22,
+   "tipo": "ui",
+   "titulo": "Testar a regra sem precisar de ninguém",
+   "texto": "O botão Testar, na aba Regra, simula o motor: você informa os valores dos critérios e ele diz se a regra dispara. Escolha o grupo ti e execute.",
+   "png": "img/19.jpg",
+   "esperado": "Validação Sim no critério e Validação Sim no resultado da regra.",
+   "obs": "Guarde esta tela: quando alguém perguntar por que fulano virou administrador, é aqui que se responde.",
+   "status": "manual"
+  },
+  {
+   "n": 23,
+   "tipo": "ui",
+   "titulo": "A Ana virou administradora sem ninguém aprovar",
+   "texto": "Para aplicar a regra a quem já existe, use Administração, Usuários, ... De uma fonte externa, Sincronização de usuários já importados, e sincronize todos. Depois abra a aba Autorizações da ana.souza e compare com o passo 13.",
+   "png": "img/20.jpg",
+   "esperado": "Onde havia Self-Service (D) agora há Super-Admin (D). A carla.dias continua Self-Service, porque está em cn=professores e não em cn=ti.",
+   "obs": "Ninguém editou a conta da Ana no GLPI. A diferença entre ela e a Carla é uma linha no diretório, o atributo member do grupo cn=ti. Quem pode editar esse atributo na sua instituição decide, sem passar por ninguém, quem administra o GLPI, o Grafana e toda aplicação ligada ali. Essa é a pergunta que fecha o laboratório.",
+   "status": "manual"
+  }
+ ]
+}

@@ -1,0 +1,22 @@
+# Liga o TLS no slapd que JÁ ESTÁ NO AR, sem derrubar o diretório e sem apagar volume.
+#
+# Por que assim e não pela variável LDAP_TLS da imagem: a osixia só configura TLS na
+# primeira subida do container. Quem já fez os Labs 0 a 2 tem o volume ldap_config
+# populado, então mudar a variável não faria efeito nenhum e a única saída seria um
+# "down -v", que apagaria o diretório inteiro e o trabalho dos labs anteriores.
+#
+# Aplicar com (de dentro do toolbox):
+#   ldapmodify -x -H ldap://openldap -D cn=admin,cn=config -w config -f /work/ldap/tls.ldif
+#
+# Depois disto o slapd passa a aceitar StartTLS na MESMA porta 389. É esse o ponto do lab:
+# não é uma porta nova, é a mesma conversa deixando de ser legível.
+dn: cn=config
+changetype: modify
+replace: olcTLSCACertificateFile
+olcTLSCACertificateFile: /certs/acme-ca.crt
+-
+replace: olcTLSCertificateFile
+olcTLSCertificateFile: /certs/ldap.crt
+-
+replace: olcTLSCertificateKeyFile
+olcTLSCertificateKeyFile: /certs/ldap.key

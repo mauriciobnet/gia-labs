@@ -1,0 +1,21 @@
+# Copie para .env se quiser mudar algo:  cp env-exemplo.txt .env
+# GIA · configuração da stack de laboratório
+#
+# Porta publicada no host. NÃO use 80 nem 443: a máquina do aluno pode já ter
+# algo nelas. O Traefik escuta nesta mesma porta por dentro e por fora, para que
+# a URL do navegador e a URL usada pelos containers sejam idênticas (o issuer do
+# Keycloak depende disso).
+#
+# Se 18080 estiver ocupada na sua máquina, troque aqui e suba de novo:
+#   docker compose down && docker compose up -d
+GIA_PORT=18080
+
+# Fuso usado pelo Keycloak (a política de horário do Lab 5 depende dele).
+TZ=America/Sao_Paulo
+
+# Opcional: restringir a publicação ao loopback (GIA_BIND=127.0.0.1).
+# Atenção: em Linux vários resolvedores devolvem ::1 para *.localhost, e nesse
+# caso amarrar só em 127.0.0.1 quebra o acesso pelo navegador. O padrão publica
+# em todas as interfaces, o que funciona sempre, mas deixa a stack visível na
+# rede local: não suba isto em wi-fi público.
+# GIA_BIND=127.0.0.1
