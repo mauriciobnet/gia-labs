@@ -18,7 +18,7 @@ nenhum: as evidências que você entrega no Moodle são arquivos gerados aqui de
 - **Docker** com o plugin Compose v2 (Docker Desktop no Windows com WSL 2 ou no macOS; Docker Engine
   no Linux). Confira com `docker compose version`.
 - **8 GB de RAM** na máquina, com pelo menos **4 GB alocados ao Docker**, e alguns GB de disco livre.
-- Um navegador moderno (Chrome, Edge ou Firefox).
+- Chrome ou Firefox (o Safari não abre os endereços `*.localhost` do laboratório).
 - Nada mais. Não instale OpenLDAP, Keycloak nem nada disso no seu sistema: tudo vive nos containers.
 
 ## Começando

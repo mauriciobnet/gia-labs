@@ -1,10 +1,10 @@
-# Lab 1B: o Grafana falando LDAP direto com o diretório da ACME.
+# Lab 3: o Grafana falando LDAP direto com o diretório da ACME.
 #
 # Repare no que este arquivo entrega e no que ele custa. A aplicação precisa saber
 # o endereço do diretório, uma credencial de serviço para procurar o usuário, o
 # formato do filtro, onde ficam as pessoas, onde ficam os grupos e como a associação
 # é escrita. Cada aplicação nova repete tudo isso, e cada uma passa a ver a senha
-# digitada pelo usuário. É esse custo que a federação do Lab 3 elimina.
+# digitada pelo usuário. Esse é o preço de cada aplicação falar direto com o diretório.
 #
 # ATENÇÃO À ORDEM DAS LINHAS. Em TOML, tudo que vem depois de um cabeçalho de tabela,
 # como [servers.attributes], pertence àquela tabela até aparecer o próximo cabeçalho.
@@ -47,8 +47,8 @@ surname = "sn"
 username = "uid"
 email = "mail"
 
-# Do grupo do diretório para o papel dentro da aplicação. Esta tradução é a mesma
-# ideia que volta no Lab 3 como claim "groups" dentro do token.
+# Do grupo do diretório para o papel dentro da aplicação: ti vira Admin, professores
+# vira Editor e quem não está em nenhum dos dois entra só para ver.
 [[servers.group_mappings]]
 group_dn = "cn=ti,ou=groups,dc=acme,dc=edu,dc=br"
 org_role = "Admin"

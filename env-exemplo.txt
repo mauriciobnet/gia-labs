@@ -3,14 +3,14 @@
 #
 # Porta publicada no host. NÃO use 80 nem 443: a máquina do aluno pode já ter
 # algo nelas. O Traefik escuta nesta mesma porta por dentro e por fora, para que
-# a URL do navegador e a URL usada pelos containers sejam idênticas (o issuer do
-# Keycloak depende disso).
+# a URL do navegador e a URL usada pelos containers sejam idênticas (os endereços
+# que o Keycloak devolve dependem disso).
 #
 # Se 18080 estiver ocupada na sua máquina, troque aqui e suba de novo:
 #   docker compose down && docker compose up -d
 GIA_PORT=18080
 
-# Fuso usado pelo Keycloak (a política de horário do Lab 5 depende dele).
+# Fuso horário dos containers que registram data e hora (o Keycloak entre eles).
 TZ=America/Sao_Paulo
 
 # Opcional: restringir a publicação ao loopback (GIA_BIND=127.0.0.1).

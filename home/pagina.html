@@ -214,8 +214,8 @@ footer a{color:var(--muted)}
   <h2>Antes de sair daqui</h2>
   <div class="avisos">
     <h3>Isto é um laboratório, não um ambiente de produção</h3>
-    <p>Senhas triviais, HTTP sem TLS, segredos de cliente no arquivo do Compose, OpenBao em modo dev
-    (cofre destravado e token root fixo) e senha em texto claro no seed do diretório. Tudo isso é
+    <p>Senhas triviais, HTTP sem TLS, segredos de cliente no arquivo do Compose, serviços em modo de
+    desenvolvimento<span id="aviso-servicos"></span> e senha em texto claro no seed do diretório. Tudo isso é
     deliberado, para o roteiro caber no tempo de aula. A porta é publicada em todas as interfaces da
     máquina, então qualquer pessoa na mesma rede alcança esta stack: não suba isto em wi-fi de
     aeroporto, café ou evento. Ao terminar, derrube com <code>down -v</code>.</p>
@@ -234,16 +234,17 @@ footer a{color:var(--muted)}
 <script>
 const $ = (s, r) => (r || document).querySelector(s);
 const NOMES = {ok: "no ar", subindo: "subindo", rota: "rota não responde", parado: "não iniciado"};
+// Ordem de TODOS os nós que o diagrama sabe desenhar. Só entram os que o servidor informa:
+// o painel de um encontro não desenha os serviços dos encontros seguintes.
 const ORDEM = ["whoami", "lam", "keycloak", "glpi", "grafana", "app", "idp", "api", "bao"];
+const CHAVE = id => id === "bao" ? "openbao" : id;
 const NO_ID = {whoami: "whoami", lam: "lam", keycloak: "keycloak", grafana: "grafana",
                app: "app", idp: "idp", api: "api", openbao: "bao", postgres: "postgres",
                openldap: "openldap", glpi: "glpi", glpidb: "glpidb"};
-const GRUPOS = [["base", "Base", "sempre no ar: Labs 1, 2 e 5"],
-                ["lab3", "Labs 3 e 4", "o diretório visto pelas aplicações, e depois protegido por TLS"],
-                ["lab6", "Lab 6", "SSO com OIDC, no mesmo Grafana do bloco acima"],
-                ["lab7", "Lab 7", "federação SAML"], ["lab8", "Lab 8", "autorização fina"],
-                ["lab9", "Lab 9", "segredos e identidades de máquina"]];
-let porta = 18080, ultimo = 0;
+// Os blocos (título e subtítulo) vêm do estado.py, em /api/estado. Antes havia uma cópia
+// aqui, que anunciava no Encontro 1 os blocos dos encontros seguintes.
+let GRUPOS = [];
+let porta = 18080, ultimo = 0, montado = false;
 
 function esc(t){ const d = document.createElement("div"); d.textContent = t == null ? "" : t; return d.innerHTML; }
 
@@ -261,28 +262,35 @@ function manual(texto, feito){
 }
 
 /* ---------- diagrama ---------- */
-function montarDiagrama(){
+function montarDiagrama(servicos){
   const nos = $("#nos"), ligs = $("#ligacoes");
+  const tem = new Set(servicos.map(s => s.id));
+  const presentes = ORDEM.filter(id => tem.has(CHAVE(id)));
+  const y = {};
   let svgNos = "", svgLigs = "";
-  ORDEM.forEach((id, i) => {
-    const y = 8 + i * 36;
-    svgNos += `<g class="no parado" id="no-${id}"><rect x="320" y="${y}" width="190" height="30" rx="8"></rect>`
-            + `<text x="415" y="${y + 20}" text-anchor="middle" data-base="${id}.localhost">${id}.localhost:${porta}</text></g>`;
-    svgLigs += `<path class="lig" id="lig-${id}" d="M262 145 C 292 145, 292 ${y + 15}, 314 ${y + 15}" marker-end="url(#seta)"></path>`;
+  presentes.forEach((id, i) => {
+    y[id] = 8 + i * 36;
+    svgNos += `<g class="no parado" id="no-${id}"><rect x="320" y="${y[id]}" width="190" height="30" rx="8"></rect>`
+            + `<text x="415" y="${y[id] + 20}" text-anchor="middle" data-base="${id}.localhost">${id}.localhost:${porta}</text></g>`;
+    svgLigs += `<path class="lig" id="lig-${id}" d="M262 145 C 292 145, 292 ${y[id] + 15}, 314 ${y[id] + 15}" marker-end="url(#seta)"></path>`;
   });
-  svgNos += `<g class="no parado" id="no-openldap"><rect x="620" y="62" width="190" height="30" rx="8"></rect>`
-          + `<text x="715" y="82" text-anchor="middle">openldap</text></g>`;
-  svgNos += `<g class="no parado" id="no-postgres"><rect x="620" y="296" width="190" height="30" rx="8"></rect>`
-          + `<text x="715" y="316" text-anchor="middle">postgres</text></g>`;
-  svgNos += `<g class="no parado" id="no-glpidb"><rect x="620" y="152" width="190" height="30" rx="8"></rect>`
-          + `<text x="715" y="172" text-anchor="middle">glpidb</text></g>`;
-  svgLigs += `<path class="lig" id="lig-lam-ldap" d="M512 59 C 560 59, 570 71, 614 74" marker-end="url(#seta)"></path>`;
-  svgLigs += `<path class="lig" id="lig-kc-ldap" d="M512 95 C 560 95, 570 83, 614 80" marker-end="url(#seta)"></path>`;
-  svgLigs += `<path class="lig" id="lig-bao-pg" d="M512 311 L 614 311" marker-end="url(#seta)"></path>`;
-  svgLigs += `<path class="lig" id="lig-glpi-db" d="M512 131 C 560 131, 570 150, 614 165" marker-end="url(#seta)"></path>`;
-  svgLigs += `<path class="lig" id="lig-glpi-ldap" d="M512 125 C 566 118, 572 96, 614 86" marker-end="url(#seta)"></path>`;
-  svgLigs += `<path class="lig" id="lig-graf-ldap" d="M512 167 C 574 150, 578 100, 614 90" marker-end="url(#seta)"></path>`;
+  const lado = (id, yy) => `<g class="no parado" id="no-${id}"><rect x="620" y="${yy}" width="190" height="30" rx="8"></rect>`
+                         + `<text x="715" y="${yy + 20}" text-anchor="middle">${id}</text></g>`;
+  const lig = (id, d) => `<path class="lig" id="${id}" d="${d}" marker-end="url(#seta)"></path>`;
+  if (tem.has("openldap")) svgNos += lado("openldap", 62);
+  if (tem.has("glpidb") && "glpi" in y) svgNos += lado("glpidb", y.glpi + 36);
+  if (tem.has("postgres") && "bao" in y) svgNos += lado("postgres", y.bao);
+  if ("lam" in y) svgLigs += lig("lig-lam-ldap", `M512 ${y.lam + 15} C 560 ${y.lam + 15}, 570 71, 614 74`);
+  if ("keycloak" in y) svgLigs += lig("lig-kc-ldap", `M512 ${y.keycloak + 15} C 560 ${y.keycloak + 15}, 570 83, 614 80`);
+  if ("bao" in y && tem.has("postgres")) svgLigs += lig("lig-bao-pg", `M512 ${y.bao + 15} L 614 ${y.bao + 15}`);
+  if ("glpi" in y) {
+    if (tem.has("glpidb")) svgLigs += lig("lig-glpi-db", `M512 ${y.glpi + 15} C 560 ${y.glpi + 15}, 570 ${y.glpi + 34}, 614 ${y.glpi + 49}`);
+    svgLigs += lig("lig-glpi-ldap", `M512 ${y.glpi + 9} C 566 ${y.glpi + 2}, 572 96, 614 86`);
+  }
+  if ("grafana" in y) svgLigs += lig("lig-graf-ldap", `M512 ${y.grafana + 15} C 574 ${y.grafana - 2}, 578 100, 614 90`);
   nos.innerHTML = svgNos; ligs.innerHTML = svgLigs;
+  // a altura acompanha a quantidade de nós (com os nove da stack completa, 340 como antes)
+  $(".mapa svg").setAttribute("viewBox", "0 0 820 " + (Math.max(190, 8 + presentes.length * 36) + 8));
 }
 
 function pintarDiagrama(servicos){
@@ -294,7 +302,7 @@ function pintarDiagrama(servicos){
   const t = document.getElementById("no-traefik");
   if (por.traefik) t.setAttribute("class", "no " + (por.traefik.estado === "ok" ? "fixo" : por.traefik.estado));
   ORDEM.forEach(id => {
-    const chave = id === "bao" ? "openbao" : id;
+    const chave = CHAVE(id);
     const l = document.getElementById("lig-" + id);
     if (l && por[chave]) l.setAttribute("class", "lig" + (por[chave].estado === "ok" ? " viva" : ""));
   });
@@ -441,23 +449,38 @@ function montarProximo(servicos, c, labs){
 
 /* Só os comandos que não cabem em tutorial: subir, abrir o toolbox, olhar log,
    recomeçar. O passo a passo de cada lab mora no tutorial visual, e o botão de cada
-   etapa da trilha leva direto para lá. Painel que vira apostila deixa de ser lido. */
-const COMANDOS = [
-  ["subir a base (Labs 1, 2 e 5)", "docker compose up -d --build"],
-  ["abrir o toolbox (é de onde os scripts rodam)", "docker compose exec toolbox bash"],
-  ["ver o que está de pé", "docker compose ps"],
-  ["log de um serviço", "docker compose logs -f keycloak"],
-  ["apagar tudo e recomeçar do zero", "docker compose --profile lab3 --profile lab6 --profile lab7 --profile lab8 --profile lab9 --profile tools down -v"],
-];
+   etapa da trilha leva direto para lá. Painel que vira apostila deixa de ser lido.
+   O reset cita só os perfis que existem nesta stack, lidos dos serviços que o servidor informa. */
+let COMANDOS = [];
 
-function montarComandos(){
+function montarComandos(servicos){
+  const perfis = [...new Set(servicos.map(s => s.perfil).filter(Boolean))].sort();
+  const com = perfis.map(p => "--profile " + p + " ").join("");
+  COMANDOS = [
+    ["subir a base da stack", "docker compose up -d --build"],
+    ["abrir o toolbox (é de onde os scripts rodam)", "docker compose exec toolbox bash"],
+    ["ver o que está de pé", "docker compose ps"],
+    ["log de um serviço", "docker compose logs -f keycloak"],
+    ["apagar tudo e recomeçar do zero", "docker compose " + com + "--profile tools down -v"],
+  ];
   $("#cmds").innerHTML = COMANDOS.map(([rot, cmd], i) =>
     `<div class="cmd"><div class="txt"><div class="rot">${esc(rot)}</div><code>${esc(cmd)}</code></div>
      <button data-i="${i}">copiar</button></div>`).join("");
-  $("#cmds").addEventListener("click", ev => {
-    const b = ev.target.closest("button");
-    if (b) copiar(COMANDOS[+b.dataset.i][1], b);
-  });
+}
+$("#cmds").addEventListener("click", ev => {
+  const b = ev.target.closest("button");
+  if (b && COMANDOS[+b.dataset.i]) copiar(COMANDOS[+b.dataset.i][1], b);
+});
+
+// Monta uma vez, na primeira resposta completa: diagrama, comandos e os avisos por serviço.
+function montarUmaVez(d){
+  if (montado || !d.servicos || !d.servicos.length) return;
+  montarDiagrama(d.servicos);
+  montarComandos(d.servicos);
+  // avisos que só valem com um serviço específico no ar vêm do próprio serviço (estado.py)
+  const avisos = d.servicos.map(s => s.aviso).filter(Boolean);
+  if (avisos.length) $("#aviso-servicos").textContent = ", como " + avisos.join(" e ") + ",";
+  montado = true;
 }
 
 function montarCredenciais(servicos){
@@ -481,6 +504,12 @@ async function atualizar(){
     });
     document.title = "Laboratório GIA :" + porta;
     if (d.carregando) { $("#relogio").textContent = "primeira sondagem…"; return; }
+    GRUPOS = (d.grupos && d.grupos.length) ? d.grupos
+           : [...new Set(d.servicos.map(s => s.grupo))].map(g => [g, g, ""]);
+    montarUmaVez(d);
+    document.querySelectorAll("#nos text").forEach(t => {
+      if (t.dataset.base) t.textContent = t.dataset.base + ":" + porta;
+    });
     const c = montarPlacar(d.servicos);
     pintarDiagrama(d.servicos);
     montarGrupos(d.servicos);
@@ -498,8 +527,6 @@ function tique(){
   const s = Math.round((Date.now() - ultimo) / 1000);
   $("#relogio").textContent = s < 2 ? "atualizado agora" : "atualizado há " + s + " s";
 }
-montarDiagrama();
-montarComandos();
 atualizar();
 setInterval(atualizar, 4000);
 setInterval(tique, 1000);

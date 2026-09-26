@@ -63,10 +63,9 @@ SERVICOS = [
     dict(id="keycloak", nome="Keycloak", grupo="base", perfil=None,
          host="keycloak", porta=8080, tipo="http", publico="keycloak",
          caminho="/realms/master/.well-known/openid-configuration", codigos=[200],
-         resumo="provedor de identidade: realms, federação com o LDAP, MFA e papéis",
-         gui="console de administração em /admin", lab="Lab 5",
-         cred=[("console de administração", "admin", "admin"),
-               ("usuários do realm acme", "ana.souza, bruno.lima, carla.dias", SENHA)],
+         resumo="provedor de identidade (IdP) que já sobe com a base da stack; a verificação do Lab 1 confere se ele responde",
+         gui="console de administração em /admin", lab="infraestrutura",
+         cred=[("console de administração", "admin", "admin")],
          dica="o primeiro start leva de 30 a 90 s; acompanhe com docker compose logs -f keycloak"),
     dict(id="glpidb", nome="MariaDB do GLPI", grupo="lab3", perfil="lab3",
          host="glpidb", porta=3306, tipo="tcp", publico=None,
@@ -80,22 +79,22 @@ SERVICOS = [
          resumo="central de serviços: é nela que o aluno configura a autenticação LDAP na mão",
          gui="interface web, entra com glpi/glpi", lab="Lab 3",
          cred=[("administrador", "glpi", "glpi"), ("técnico", "tech", "tech"),
-               ("depois do LDAP", "ana.souza e os que a turma criar", SENHA)],
+               ("depois do LDAP", "ana.souza (grupo ti vira Super-Admin pela regra do Lab 3)", SENHA)],
          dica="ele só responde depois que o MariaDB fica saudável e a instalação automática termina"),
     dict(id="grafana", nome="Grafana", grupo="lab3", perfil="lab3",
          host="grafana", porta=3000, tipo="http", publico="grafana",
          caminho="/login", codigos=[200, 302],
-         resumo="a mesma aplicação nos dois modelos: LDAP direto no Lab 3, OIDC no Lab 6",
-         gui="formulário de usuário e senha (LDAP) e, no Lab 6, o botão Keycloak ACME",
-         lab="Labs 3 e 6",
+         resumo="aplicação que autentica direto no diretório: LDAP no Lab 3, a mesma conexão cifrada no Lab 4",
+         gui="formulário de usuário e senha (LDAP); o botão do Keycloak não funciona neste encontro",
+         lab="Labs 3 e 4",
          cred=[("login local de emergência", "admin", "admin"),
-               ("pelo diretório ou pelo Keycloak", "ana.souza (grupo ti vira Admin)", SENHA)],
+               ("pelo diretório", "ana.souza (grupo ti vira Admin)", SENHA)],
          dica=None),
 ]
 
 GRUPOS = [
     ("base", "Base", "sempre no ar: Labs 1 e 2"),
-    ("lab3", "Lab 3", "o diretório visto pelas aplicações"),
+    ("lab3", "Labs 3 e 4", "o diretório visto pelas aplicações, e depois protegido por TLS"),
 ]
 
 CARIMBOS = os.environ.get("GIA_CARIMBOS", "/carimbos")
@@ -113,8 +112,10 @@ LABS = [
          tutorial="lab4", comando="docker compose exec toolbox bash /work/scripts/lab4-ldap-tls.sh"),
 ]
 
+# A página recebe os blocos daqui, e não de uma cópia própria: assim o empacotar.py recorta
+# um lugar só, e o painel de um encontro não anuncia os blocos dos encontros seguintes.
 _estado = {"servicos": [], "labs": [], "aluno": None, "carregando": True,
-           "porta": PORTA, "atualizado": 0}
+           "grupos": [list(g) for g in GRUPOS], "porta": PORTA, "atualizado": 0}
 _trava = threading.Lock()
 
 
@@ -154,7 +155,7 @@ def _http(caminho, host_cabecalho, timeout=TIMEOUT_HTTP):
 def _sonda(s):
     r = dict(id=s["id"], nome=s["nome"], grupo=s["grupo"], perfil=s["perfil"],
              resumo=s["resumo"], gui=s["gui"], lab=s["lab"],
-             cred=[c for c in s["cred"] if c[1]], extra=None, dica=None)
+             cred=[c for c in s["cred"] if c[1]], extra=None, dica=None, aviso=s.get("aviso"))
     r["url"] = "http://%s.localhost:%d" % (s["publico"], PORTA) if s["publico"] else None
 
     if not _resolve(s["host"]):

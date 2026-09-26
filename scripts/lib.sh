@@ -27,7 +27,7 @@ kc_admin_token() {
   return 1
 }
 # Sem '|| ADMIN_TOKEN=""' o set -e derrubaria, ainda no source, labs que nem precisam do
-# Keycloak (0, 1, 1B e 1C). Quem precisa do token falha adiante, com mensagem própria.
+# Keycloak, como os do diretório. Quem precisa do token falha adiante, com mensagem própria.
 ADMIN_TOKEN=$(kc_admin_token) || ADMIN_TOKEN=""
 auth=(-H "Authorization: Bearer $ADMIN_TOKEN" -H "Content-Type: application/json")
 
@@ -92,7 +92,7 @@ carimbar() { # numero "titulo" "detalhe" [ok|falha]
 # que entregar e não sabe por quê. O trap grava o que chegou a ser verificado e diz, dentro do
 # próprio arquivo, que o lab foi interrompido.
 #
-# O número do lab sai do nome do script (lab4-ldap-tls.sh -> 4, lab6-sso.sh -> 6) para que
+# O número do lab sai do nome do script (lab2-leitura.sh -> 2, lab4-ldap-tls.sh -> 4) para que
 # nenhum lab precise ser alterado. Script que não é lab não casa com o padrão e não grava nada.
 EV_GRAVADA=0
 LAB_NUM=$(printf '%s' "${0##*/}" | sed -n 's/^lab\([0-9][a-z]*\)-.*/\1/p')

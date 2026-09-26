@@ -16,7 +16,7 @@ a mensagem inteira.
 
 - **8 GB de RAM**, com pelo menos **4 GB disponíveis para o Docker**.
 - Uns **5 GB de disco livre** para as imagens.
-- Um navegador moderno: Chrome, Edge ou Firefox.
+- Chrome ou Firefox. O Safari não serve: ele não abre os endereços `*.localhost` do laboratório.
 - Conexão para o primeiro download. Depois disso, os laboratórios rodam offline.
 
 ---
@@ -241,6 +241,10 @@ ou falta sair e entrar de novo na sessão.
 **Algum serviço demora para ficar pronto.** É normal: o Keycloak leva de 30 a 90 segundos na primeira
 subida, o LAM uns 40 segundos, e o GLPI cerca de um minuto se instalando sozinho. Espere e recarregue
 o painel.
+
+**O painel abre, mas os links do LAM, do GLPI ou do Grafana não.** Veja qual navegador você está
+usando. Chrome e Firefox resolvem sozinhos qualquer nome terminado em `.localhost`; o Safari, não.
+No Mac, abra o painel no Chrome ou no Firefox.
 
 **`curl: could not resolve host` ao rodar um comando do roteiro.** Os endereços `*.localhost` do
 laboratório são resolvidos pelo **navegador**, e o terminal do Windows e do macOS não os resolve. Por
